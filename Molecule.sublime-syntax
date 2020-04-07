@@ -1,0 +1,150 @@
+%YAML 1.2
+---
+#   SublimeText-Molecule: A Package for Molecule in Sublime Text.
+#
+#   Copyright (C) 2020 Boyu Yang <yangby@cryptape.com>
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU Affero General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU Affero General Public License for more details.
+#
+#   You should have received a copy of the GNU Affero General Public License
+#   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+name: Molecule
+file_extensions:
+  - mol
+scope: source.molecule
+
+contexts:
+  main:
+    - include: import_decl
+    - include: array_decl
+    - include: struct_decl
+    - include: vector_decl
+    - include: table_decl
+    - include: option_decl
+    - include: union_decl
+    - include: comments
+
+  import_decl:
+    - match: '\b(import)\b'
+      captures:
+        1: keyword.control.import.molecule
+      push:
+        - match: ';'
+          scope: punctuation.terminator.molecule
+          pop: true
+
+  array_decl:
+    - match: '\b(array)\b\s+({{ident}})\s*(\[)\s*({{ident}})\s*(;)\s*({{number}})\s*(\])\s*(;)'
+      captures:
+        1: storage.type
+        2: entity.name.type.molecule
+        3: punctuation.section.brackets.begin.molecule
+        4: entity.name.type.molecule
+        5: punctuation.terminator.molecule
+        6: constant.numeric.integer.molecule
+        7: punctuation.section.brackets.end.molecule
+        8: punctuation.terminator.molecule
+
+  struct_decl:
+    - match: '\b(struct)\b\s+({{ident}})\s*({)'
+      captures:
+        1: storage.type
+        2: entity.name.type.molecule
+        3: punctuation.section.braces.begin.molecule
+      push:
+        - include: comments
+        - include: field_decl
+        - match: '}'
+          scope: punctuation.section.braces.end.molecule
+          pop: true
+
+  vector_decl:
+    - match: '\b(vector)\b\s+({{ident}})\s*(<)\s*({{ident}})\s*(>)\s*(;)'
+      captures:
+        1: storage.type
+        2: entity.name.type.molecule
+        3: punctuation.definition.generic.begin.molecule
+        4: entity.name.type.molecule
+        5: punctuation.definition.generic.end.molecule
+        6: punctuation.terminator.molecule
+
+  table_decl:
+    - match: '\b(table)\b\s+({{ident}})\s*({)'
+      captures:
+        1: storage.type
+        2: entity.name.type.molecule
+        3: punctuation.section.braces.begin.molecule
+      push:
+        - include: comments
+        - include: field_decl
+        - match: '}'
+          scope: punctuation.section.braces.end.molecule
+          pop: true
+
+  option_decl:
+    - match: '\b(option)\b\s+({{ident}})\s*(\()\s*({{ident}})\s*(\))\s*(;)'
+      captures:
+        1: storage.type
+        2: entity.name.type.molecule
+        3: punctuation.section.parens.begin.molecule
+        4: entity.name.type.molecule
+        5: punctuation.section.parens.end.molecule
+        6: punctuation.terminator.molecule
+
+  union_decl:
+    - match: '\b(union)\b\s+({{ident}})\s*({)'
+      captures:
+        1: storage.type
+        2: entity.name.type.molecule
+        3: punctuation.section.braces.begin.molecule
+      push:
+        - include: comments
+        - include: item_decl
+        - match: '}'
+          scope: punctuation.section.braces.end.molecule
+          pop: true
+
+  item_decl:
+    - match: '({{ident}})\s*(,)'
+      captures:
+        1: entity.name.type.molecule
+        4: punctuation.separator.molecule
+
+  field_decl:
+    - match: '({{ident}})\s*(:)\s*({{ident}})\s*(,)'
+      captures:
+        2: punctuation.terminator.molecule
+        3: entity.name.type.molecule
+        4: punctuation.separator.molecule
+
+  comments:
+    - include: line_comment
+    - include: block_comment
+
+  line_comment:
+    - match: '//'
+      scope: punctuation.definition.comment.begin.molecule
+      push:
+        - meta_scope: comment.line.molecule
+        - match: $
+          pop: true
+
+  block_comment:
+    - match: '/\*'
+      scope: punctuation.definition.comment.begin.molecule
+      push:
+        - meta_scope: comment.block.molecule
+        - match: \*/
+          pop: true
+
+variables:
+  ident: '\b[A-Za-z][A-Za-z0-9_]*\b'
+  number: '[1-9][0-9]*'
